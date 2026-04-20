@@ -1,0 +1,47 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: org.apache.fontbox
+Build-Jdk-Spec: 1.8
+Bundle-Description: The Apache FontBox library is an open source Java 
+ tool to obtain low level information    from font files. FontBox is a
+  subproject of Apache PDFBox.
+Bundle-DocURL: https://pdfbox.apache.org
+Bundle-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+Bundle-ManifestVersion: 2
+Bundle-Name: Apache FontBox
+Bundle-SymbolicName: org.apache.pdfbox.fontbox
+Bundle-Vendor: The Apache Software Foundation
+Bundle-Version: 3.0.1
+Created-By: Apache Maven Bundle Plugin 5.1.9
+Export-Package: org.apache.fontbox;uses:="org.apache.fontbox.encoding,
+ org.apache.fontbox.util";version="3.0.1",org.apache.fontbox.afm;uses:
+ ="org.apache.fontbox.util";version="3.0.1",org.apache.fontbox.cff;use
+ s:="org.apache.fontbox,org.apache.fontbox.encoding,org.apache.fontbox
+ .type1,org.apache.fontbox.util,org.apache.pdfbox.io";version="3.0.1",
+ org.apache.fontbox.cmap;uses:="org.apache.pdfbox.io";version="3.0.1",
+ org.apache.fontbox.encoding;version="3.0.1",org.apache.fontbox.pfb;ve
+ rsion="3.0.1",org.apache.fontbox.ttf;uses:="org.apache.fontbox,org.ap
+ ache.fontbox.cff,org.apache.fontbox.ttf.model,org.apache.fontbox.util
+ ,org.apache.pdfbox.io";version="3.0.1",org.apache.fontbox.ttf.gsub;us
+ es:="org.apache.fontbox.ttf,org.apache.fontbox.ttf.model,org.apache.f
+ ontbox.ttf.table.common";version="3.0.1",org.apache.fontbox.ttf.model
+ ;version="3.0.1",org.apache.fontbox.ttf.table.common;version="3.0.1",
+ org.apache.fontbox.ttf.table.gsub;uses:="org.apache.fontbox.ttf.table
+ .common";version="3.0.1",org.apache.fontbox.type1;uses:="org.apache.f
+ ontbox,org.apache.fontbox.cff,org.apache.fontbox.encoding,org.apache.
+ fontbox.util";version="3.0.1",org.apache.fontbox.util;version="3.0.1"
+ ,org.apache.fontbox.util.autodetect;version="3.0.1"
+Implementation-Title: Apache FontBox
+Implementation-Vendor: The Apache Software Foundation
+Implementation-Version: 3.0.1
+Import-Package: org.apache.commons.logging;version="[1.2,2)",org.apach
+ e.fontbox,org.apache.fontbox.cff,org.apache.fontbox.encoding,org.apac
+ he.fontbox.pfb,org.apache.fontbox.ttf,org.apache.fontbox.ttf.gsub,org
+ .apache.fontbox.ttf.model,org.apache.fontbox.ttf.table.common,org.apa
+ che.fontbox.ttf.table.gsub,org.apache.fontbox.type1,org.apache.fontbo
+ x.util,org.apache.pdfbox.io;version="[3.0,4)"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+Specification-Title: Apache FontBox
+Specification-Vendor: The Apache Software Foundation
+Specification-Version: 3.0
+Tool: Bnd-6.3.1.202206071316
+
