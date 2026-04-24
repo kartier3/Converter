@@ -1,6 +1,12 @@
 package com.example;
 
+import com.formdev.flatlaf.FlatIntelliJLaf;
 import javax.swing.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.geom.RoundRectangle2D;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
@@ -19,11 +25,26 @@ public class ImageToPdfGui extends JFrame {
     private final JTextField outputField;
     private final List<File> selectedFiles = new ArrayList<>();
 
+    private JDialog hiddenDialog;
+    private boolean isHidden = false;
+
     public ImageToPdfGui() {
         setTitle("Image to PDF Converter");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setSize(600, 450);
         setLocationRelativeTo(null);
+
+        // Hide window on close button (minimize to taskbar/tray effect)
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                if (!isHidden) {
+                    hideToCorner();
+                } else {
+                    System.exit(0);
+                }
+            }
+        });
 
         // Main panel with padding
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
@@ -65,8 +86,24 @@ public class ImageToPdfGui extends JFrame {
 
         mainPanel.add(centerPanel, BorderLayout.CENTER);
 
+        // Hide button in top-right corner
+        JButton hideButton = new JButton("− Hide");
+        hideButton.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        hideButton.setForeground(new Color(147, 51, 234));
+        hideButton.setContentAreaFilled(false);
+        hideButton.setBorderPainted(false);
+        hideButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        hideButton.addActionListener(e -> hideToCorner());
+
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(false);
+        topPanel.add(titleLabel, BorderLayout.CENTER);
+        topPanel.add(hideButton, BorderLayout.EAST);
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+
         // Bottom: Output file and Convert
         JPanel bottomPanel = new JPanel(new BorderLayout(10, 10));
+        bottomPanel.setOpaque(false);
 
         // Output file selection
         JPanel outputPanel = new JPanel(new BorderLayout(5, 0));
@@ -83,12 +120,13 @@ public class ImageToPdfGui extends JFrame {
 
         // Convert button and status
         JPanel convertPanel = new JPanel(new BorderLayout(10, 5));
-        JButton convertButton = new JButton("Convert to PDF");
+        convertPanel.setOpaque(false);
+        JButton convertButton = new JButton("⚡ Convert to PDF");
         convertButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        convertButton.setBackground(new Color(0, 120, 212));
+        convertButton.setBackground(new Color(147, 51, 234)); // Purple
         convertButton.setForeground(Color.WHITE);
         convertButton.setFocusPainted(false);
-        convertButton.setPreferredSize(new Dimension(150, 40));
+        convertButton.setPreferredSize(new Dimension(180, 42));
         convertButton.addActionListener(e -> convert());
 
         statusLabel = new JLabel("Ready - drag images or click Add Files");
@@ -104,8 +142,68 @@ public class ImageToPdfGui extends JFrame {
         bottomPanel.add(convertPanel, BorderLayout.SOUTH);
 
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+        mainPanel.setOpaque(false);
 
-        add(mainPanel);
+        // Glass-like panel with purple tint
+        JPanel glassPanel = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.15f));
+                g2d.setColor(new Color(147, 51, 234)); // Purple glow
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+                g2d.dispose();
+            }
+        };
+        glassPanel.setOpaque(false);
+        glassPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        glassPanel.add(mainPanel, BorderLayout.CENTER);
+
+        add(glassPanel);
+    }
+
+    private void hideToCorner() {
+        if (hiddenDialog == null) {
+            hiddenDialog = new JDialog();
+            hiddenDialog.setUndecorated(true);
+            hiddenDialog.setSize(60, 60);
+            hiddenDialog.setShape(new RoundRectangle2D.Double(0, 0, 60, 60, 20, 20));
+            hiddenDialog.setOpacity(0.85f);
+
+            JButton restoreBtn = new JButton("⚡");
+            restoreBtn.setFont(new Font("Segoe UI", Font.BOLD, 20));
+            restoreBtn.setForeground(Color.WHITE);
+            restoreBtn.setBackground(new Color(147, 51, 234));
+            restoreBtn.setFocusPainted(false);
+            restoreBtn.setBorderPainted(false);
+            restoreBtn.addActionListener(e -> restoreWindow());
+
+            // Also restore on click anywhere in dialog
+            hiddenDialog.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    restoreWindow();
+                }
+            });
+
+            hiddenDialog.add(restoreBtn);
+        }
+
+        // Position at bottom-right corner
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        hiddenDialog.setLocation(screen.width - 80, screen.height - 100);
+
+        isHidden = true;
+        setVisible(false);
+        hiddenDialog.setVisible(true);
+    }
+
+    private void restoreWindow() {
+        isHidden = false;
+        hiddenDialog.setVisible(false);
+        setVisible(true);
+        toFront();
     }
 
     private void addFiles() {
@@ -264,10 +362,30 @@ public class ImageToPdfGui extends JFrame {
     }
 
     public static void main(String[] args) {
-        // Use system look & feel
+        // Use modern FlatLaf theme with purple futuristic styling
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ignored) {}
+            UIManager.setLookAndFeel(new FlatIntelliJLaf());
+            // Purple futuristic theme
+            UIManager.put("Button.arc", 12);
+            UIManager.put("Component.arc", 12);
+            UIManager.put("TextComponent.arc", 10);
+            UIManager.put("ScrollBar.trackArc", 10);
+            UIManager.put("ScrollBar.thumbArc", 10);
+            UIManager.put("ScrollBar.trackInsets", new Insets(2, 4, 2, 4));
+            UIManager.put("ScrollBar.thumbInsets", new Insets(2, 2, 2, 2));
+            // Purple accent colors
+            UIManager.put("Component.focusColor", new Color(168, 85, 247));
+            UIManager.put("Component.borderColor", new Color(147, 51, 234));
+            UIManager.put("Button.hoverBackground", new Color(168, 85, 247));
+            UIManager.put("Button.pressedBackground", new Color(126, 34, 206));
+            UIManager.put("Button.default.background", new Color(147, 51, 234));
+            UIManager.put("Button.default.foreground", Color.WHITE);
+            UIManager.put("TextField.selectionBackground", new Color(168, 85, 247, 128));
+            UIManager.put("List.selectionBackground", new Color(168, 85, 247, 200));
+            UIManager.put("List.selectionForeground", Color.WHITE);
+        } catch (Exception ex) {
+            System.err.println("Failed to initialize FlatLaf: " + ex.getMessage());
+        }
 
         SwingUtilities.invokeLater(() -> {
             new ImageToPdfGui().setVisible(true);
