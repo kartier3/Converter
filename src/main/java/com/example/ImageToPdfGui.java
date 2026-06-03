@@ -147,13 +147,25 @@ public class ImageToPdfGui extends JFrame {
         JButton browseButton = createStyledButton("Browse...", new Color(107, 114, 128));
         browseButton.addActionListener(e -> browseOutput());
 
+        JButton clearOutputButton = createStyledButton("Clear", new Color(239, 68, 68));
+        clearOutputButton.setPreferredSize(new Dimension(60, 28));
+        clearOutputButton.addActionListener(e -> {
+            outputField.setText("");
+            showToast("Output path cleared", new Color(107, 114, 128));
+        });
+
+        JPanel outputButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        outputButtonPanel.setOpaque(false);
+        outputButtonPanel.add(browseButton);
+        outputButtonPanel.add(clearOutputButton);
+
         JPanel outputPanel = new JPanel(new BorderLayout(5, 0));
         outputPanel.setOpaque(false);
         outputPanel.add(new JLabel("Output: "), BorderLayout.WEST);
         outputPanel.add(outputField, BorderLayout.CENTER);
-        outputPanel.add(browseButton, BorderLayout.EAST);
+        outputPanel.add(outputButtonPanel, BorderLayout.EAST);
 
-        statusLabel = new JLabel("Ready - drag images or click Add Files");
+        statusLabel = new JLabel("👋 Welcome! Drag & drop images here or click 'Add Files' to begin");
         statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         statusLabel.setForeground(new Color(107, 114, 128));
 
@@ -200,6 +212,68 @@ public class ImageToPdfGui extends JFrame {
         bgPanel.add(mainPanel, BorderLayout.CENTER);
 
         add(bgPanel);
+
+        // Keyboard shortcuts
+        setupKeyboardShortcuts();
+    }
+
+    private void setupKeyboardShortcuts() {
+        InputMap inputMap = getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = getRootPane().getActionMap();
+
+        // Ctrl+O: Add files
+        inputMap.put(KeyStroke.getKeyStroke("control O"), "addFiles");
+        actionMap.put("addFiles", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addFiles();
+            }
+        });
+
+        // Delete: Remove selected
+        inputMap.put(KeyStroke.getKeyStroke("DELETE"), "removeSelected");
+        actionMap.put("removeSelected", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                removeSelected();
+            }
+        });
+
+        // Ctrl+Delete: Clear all
+        inputMap.put(KeyStroke.getKeyStroke("control DELETE"), "clearAll");
+        actionMap.put("clearAll", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                clearAll();
+            }
+        });
+
+        // Ctrl+B: Browse output
+        inputMap.put(KeyStroke.getKeyStroke("control B"), "browseOutput");
+        actionMap.put("browseOutput", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                browseOutput();
+            }
+        });
+
+        // Ctrl+Enter: Convert
+        inputMap.put(KeyStroke.getKeyStroke("control ENTER"), "convert");
+        actionMap.put("convert", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                convert();
+            }
+        });
+
+        // Escape: Hide to corner
+        inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "hideToCorner");
+        actionMap.put("hideToCorner", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                hideToCorner();
+            }
+        });
     }
 
     private JButton createStyledButton(String text, Color baseColor) {
@@ -422,8 +496,13 @@ public class ImageToPdfGui extends JFrame {
 
     private void updateStatus() {
         int count = imageItems.size();
-        statusLabel.setText(count + " image" + (count == 1 ? "" : "s") + " ready for conversion");
-        statusLabel.setForeground(count > 0 ? new Color(147, 51, 234) : new Color(107, 114, 128));
+        if (count == 0) {
+            statusLabel.setText("👋 Welcome! Drag & drop images here or click 'Add Files' to begin");
+            statusLabel.setForeground(new Color(107, 114, 128));
+        } else {
+            statusLabel.setText("📷 " + count + " image" + (count == 1 ? "" : "s") + " ready • Choose output location and click Convert");
+            statusLabel.setForeground(new Color(147, 51, 234));
+        }
     }
 
     private void convert() {
@@ -439,7 +518,7 @@ public class ImageToPdfGui extends JFrame {
         }
 
         setEnabled(false);
-        statusLabel.setText("Converting...");
+        statusLabel.setText("⏳ Converting " + imageItems.size() + " image" + (imageItems.size() == 1 ? "" : "s") + " to PDF...");
 
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
@@ -457,13 +536,13 @@ public class ImageToPdfGui extends JFrame {
                 setEnabled(true);
                 try {
                     get();
-                    statusLabel.setText("Conversion complete! ✓");
+                    statusLabel.setText("✅ Success! PDF created at: " + new File(outputPath).getName());
                     statusLabel.setForeground(new Color(34, 197, 94));
                     showToast("PDF created successfully!", new Color(34, 197, 94));
                 } catch (Exception e) {
-                    statusLabel.setText("Error: " + e.getCause().getMessage());
+                    statusLabel.setText("❌ Error: " + e.getCause().getMessage());
                     statusLabel.setForeground(Color.RED);
-                    showToast("Conversion failed", Color.RED);
+                    showToast("Conversion failed: " + e.getCause().getMessage(), Color.RED);
                 }
             }
         };
